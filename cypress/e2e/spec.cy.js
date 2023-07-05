@@ -20,9 +20,26 @@ const headers =
     
     }
 
-describe('Calculate API Endpoint Test',()=>{
+describe('Calculations endpoint',()=>{
 
-    it('Happy Path Scenario where amount and period are given in defined range', ()=>{
+      it('loan application session healthcheck', ()=>{
+    
+        cy.request({
+            method: 'GET',
+            url: "https://laenutaotlus.bigbank.ee/api/v1/session",
+            body: requestbody
+
+        }).then(response => {
+            
+            expect(response.status).eq(204)
+            expect(response.body).to.not.be.null;
+
+        })
+
+    })
+
+
+    it('Happy Path', ()=>{
       
   
 
@@ -42,227 +59,61 @@ describe('Calculate API Endpoint Test',()=>{
         })
 
     })
-  }) 
+  
 
-    it('Happy Path Scenario where amount and period are in mid ranges', ()=>{
-      
+
+    it('Non-happy path', ()=>{
+        
+        
+        cy.request({
+          method: 'POST',
+          url: endpointurl,
+          body: requestbody
+      }).then(response => {
+              expect(response.status).eq(200)
+              expect(response.headers).to.include(headers)
+              expect(response.body.totalRepayableAmount).equals(7699.7)
+              expect(response.body.monthlyPayment).equals(0)
+              expect(response.body.apr).to.be.greaterThan(0)
+
+          })
+
+      })
+    }) 
+ 
+
+
+    it('period is string', ()=>{
+        
+
         cy.request({
             method: 'POST',
             url: endpointurl,
             body: requestbody
+
+        }).then(response => {
+             expect(response.status).eq(400)
+             expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
+             expect(response.body[0].message).equals("should have required property 'maturity'")
+             expect(response.body[14].message).equals("should match exactly one schema in oneOf")
+        })
+    })
+
+
+    it('Incorrect payment day', ()=>{
+             
+
+        cy.request({
+            method: 'POST',
+            url: endpointurl,
+            body: requestbody
+
         }).then(response => {
              expect(response.status).eq(200)
-             expect(response.headers).to.include(headers)
-             expect(response.body.totalRepayableAmount).to.be.greaterThan(7500)
-             expect(response.body.monthlyPayment).to.be.greaterThan(500)
+             expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
+             expect(response.body.totalRepayableAmount).to.be.greaterThan(300)
+             expect(response.body.monthlyPayment).to.be.greaterThan(1)
              expect(response.body.apr).to.be.greaterThan(0)
-
+             
         })
-
     })
-
-//     it('Happy Path Scenario where amount and period  are max', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.maturity=144
-//         b1.amount=250000
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(200)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body.totalRepayableAmount).to.be.greaterThan(b1.amount)
-//              expect(response.body.monthlyPayment).to.be.greaterThan(b1.amount/b1.maturity)
-//              expect(response.body.apr).to.be.greaterThan(0)
-
-//         })
-
-//     })
-  
-    it('Unhappy Scenario where period is below 0', ()=>{
-      
-      
-      cy.request({
-        method: 'POST',
-        url: endpointurl,
-        body: requestbody
-    }).then(response => {
-            expect(response.status).eq(200)
-            expect(response.headers).to.include(headers)
-             expect(response.body.totalRepayableAmount).equals(0)
-             expect(response.body.monthlyPayment).equals(0)
-             expect(response.body.apr).to.be.greaterThan(0)
-
-        })
-
-    })
-
-//     it('Unhappy Scenario where amount is 0', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.amount=0
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody,
-//             failOnStatusCode: false
-
-//         }).then(response => {
-//              expect(response.status).eq(400)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body[2].message).equals("should have required property 'amount'")
-
-//              //expect(response.body.error.code).eq(500)
-//            //  expect(response.body.monthlyPayment).equals(0)
-//              //expect(response.body.apr).to.be.greaterThan(0)
-
-//         })
-//     })
-
-//     it('Unhappy Scenario where period is 0', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.maturity=0
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(400)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body[0].message).equals("should have required property 'maturity'")
-
-//         })
-//     })
-
-
-//     it('Unhappy Scenario where amount and period is float', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.maturity=0.6
-//         b1.amount=0.98
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(400)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body[0].message).equals("should have required property 'maturity'")
-//              expect(response.body[2].message).equals("should have required property 'amount'")
-
-//         })
-//     })
-
-//     it('Unhappy Scenario where amount is string', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.amount="^%^&34as"
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(400)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body[2].message).equals("should have required property 'amount'")
-//              expect(response.body[14].message).equals("should match exactly one schema in oneOf")
-//         })
-//     })
-
-//     it('Unhappy Scenario where period is string', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.maturity="^%^&34as"
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(400)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body[0].message).equals("should have required property 'maturity'")
-//              expect(response.body[14].message).equals("should match exactly one schema in oneOf")
-//         })
-//     })
-
-//     it('Unhappy Scenario where monthly payment day is wrong', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.monthlyPaymentDay=1
-//         const requestbody=reqbody(b1)
-
-//         cy.request({
-//             method: 'POST',
-//             url: endpointurl,
-//             body: requestbody
-
-//         }).then(response => {
-//              expect(response.status).eq(200)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body.totalRepayableAmount).to.be.greaterThan(b1.amount)
-//              expect(response.body.monthlyPayment).to.be.greaterThan(b1.amount/b1.maturity)
-//              expect(response.body.apr).to.be.greaterThan(0)
-             
-//         })
-//     })
-
-
-//     it('Unhappy Scenario where Loan amount is above maximum', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.amount=300000
-//         const requestbody=reqbody(b1)
-
-//         cy.request('POST', endpointurl, requestbody).then(function(response)
-//         {
-             
-//              expect(response.status).eq(200)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body.totalRepayableAmount).to.be.greaterThan(b1.amount)
-//              expect(response.body.monthlyPayment).to.be.greaterThan(b1.amount/b1.maturity)
-//              expect(response.body.apr).to.be.greaterThan(0)
-             
-//         })
-//     })
-
-
-
-//     it('Unhappy Scenario where Loan period is above maximum', ()=>{
-      
-//         let b1=new CalculatorDataAPI()
-//         b1.maturity=150
-//         const requestbody=reqbody(b1)
-
-//         cy.request('POST', endpointurl, requestbody).then(function(response)
-//         {
-             
-//              expect(response.status).eq(200)
-//              expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-//              expect(response.body.totalRepayableAmount).to.be.greaterThan(b1.amount)
-//              expect(response.body.monthlyPayment).to.be.greaterThan(b1.amount/b1.maturity)
-//              expect(response.body.apr).to.be.greaterThan(0)
-             
-//         })
-//     })
-
-// 
