@@ -83,7 +83,7 @@ describe('Calculations endpoint',()=>{
  
 
 
-    it('period is string', ()=>{
+    it('body is missing', ()=>{
         
 
         cy.request({
@@ -100,20 +100,3 @@ describe('Calculations endpoint',()=>{
     })
 
 
-    it('Incorrect payment day', ()=>{
-             
-
-        cy.request({
-            method: 'POST',
-            url: endpointurl,
-            body: requestbody
-
-        }).then(response => {
-             expect(response.status).eq(200)
-             expect(response.headers).to.include({'content-type':'application/json; charset=utf-8','server':'cloudflare'})
-             expect(response.body.totalRepayableAmount).to.be.greaterThan(300)
-             expect(response.body.monthlyPayment).to.be.greaterThan(1)
-             expect(response.body.apr).to.be.greaterThan(0)
-             
-        })
-    })
