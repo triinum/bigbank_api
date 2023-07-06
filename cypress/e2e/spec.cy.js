@@ -88,8 +88,7 @@ describe('Calculations endpoint',()=>{
 
         cy.request({
             method: 'POST',
-            url: endpointurl,
-            body: requestbody
+            url: endpointurl
 
         }).then(response => {
              expect(response.status).eq(400)
