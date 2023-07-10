@@ -23,3 +23,23 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('requestWith', (maturity, amount) => {
+    const endpointurl='https://laenutaotlus.bigbank.ee/api/v1/loan/calculate'
+    const headers = { 'content-type':'application/json; charset=utf-8','server':'cloudflare' }
+    const requestbody= { 
+      maturity,                 
+      amount,               
+      "productType": "SMALL_LOAN_EE01",
+      "interestRate": 13.8,
+      "monthlyPaymentDay": 15,
+      "administrationFee": 2.99,
+      "conclusionFee": 100,
+      "currency": "EUR"    
+    } 
+    return cy.request({
+      url: endpointurl,
+      body: requestbody,
+    })
+
+  })
